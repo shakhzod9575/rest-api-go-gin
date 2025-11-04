@@ -6,18 +6,18 @@ import (
 	"rest-api-go-gin/internal/database"
 	"rest-api-go-gin/internal/env"
 
-	_ "github.com/mattn/go-sqlite3" // sqlite3 driver
 	_ "github.com/joho/godotenv/autoload" // used to load environment vars
+	_ "modernc.org/sqlite"
 )
 
 type application struct {
-	port int
+	port      int
 	jwtSecret string
-	models database.Models
+	models    database.Models
 }
 
 func main() {
-	db, err := sql.Open("sqlite3", "./data.db")
+	db, err := sql.Open("sqlite", "./data.db")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -26,9 +26,9 @@ func main() {
 
 	models := database.NewModels(db)
 	app := &application{
-		port: env.GetEnvInt("PORT", 8080),
+		port:      env.GetEnvInt("PORT", 8080),
 		jwtSecret: env.GetEnvString("JWT_SECRET", "some-secret-123456"),
-		models: models,
+		models:    models,
 	}
 
 	if err := app.serve(); err != nil {

@@ -10,14 +10,42 @@ func (app *application) routes() http.Handler {
 	g := gin.Default()
 
 	v1 := g.Group("/api/v1")
-	{
-		v1.POST("/events", app.createEvent)
-		v1.GET("/events", app.getAllEvents)
-		v1.GET("/events/:id", app.getEvent)
-		v1.PUT("/events/:id", app.updateEvent)
-		v1.DELETE("/event/:id", app.deleteEvent)
 
-		v1.POST("/auth/register", app.registerUser)
+	// --- Public routes ---
+	auth := v1.Group("/auth")
+	{
+		auth.POST("/register", app.registerUser)
+		auth.POST("/login", app.login)
+	}
+
+	// Publicly accessible routes (if you want GET events public)
+	eventsPublic := v1.Group("/events")
+	{
+		eventsPublic.GET("", app.getAllEvents)
+		eventsPublic.GET("/:id", app.getEvent)
+		eventsPublic.GET("/:id/attendees", app.getAttendeesForEvent)
+	}
+
+	// --- Protected routes (require JWT) ---
+	authGroup := v1.Group("/")
+	authGroup.Use(app.AuthMiddleware())
+
+	// Protected event routes
+	events := authGroup.Group("/events")
+	{
+		events.POST("", app.createEvent)
+		events.PUT("/:id", app.updateEvent)
+		events.DELETE("/:id", app.deleteEvent)
+
+		// attendees under a specific event
+		events.POST("/:id/attendees/:userId", app.addAttendeeToEvent)
+		events.DELETE("/:id/attendees/:userId", app.deleteAttendeeFromEvent)
+	}
+
+	// Protected attendee routes
+	attendees := authGroup.Group("/attendees")
+	{
+		attendees.GET("/:id/events", app.getEventsByAttendee)
 	}
 
 	return g
