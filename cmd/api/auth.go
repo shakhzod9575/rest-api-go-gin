@@ -26,6 +26,17 @@ type loginResponse struct {
 	Token string `json:"token"`
 }
 
+// RegisterUser godoc
+// @Summary Register a user
+// @Schemes
+// @Description Register new user
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param event body registerRequest true "Registeration request"
+// @Success 201 {object} database.User
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Router /auth/register [post]
 func (app *application) registerUser(c *gin.Context) {
 	var payload registerRequest
 
@@ -57,6 +68,18 @@ func (app *application) registerUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, user)
 }
 
+// Login godoc
+// @Summary Login a user
+// @Schemes
+// @Description Login user and return JWT token
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param request body loginRequest true "User login details"
+// @Success 200 {object} loginResponse
+// @Failure 400 {object} map[string]string "Bad Request"
+// @Failure 500 {object} map[string]string "Internal Server Error"
+// @Router /auth/login [post]
 func (app *application) login(c *gin.Context) {
 	var payload loginRequest
 	if err := c.ShouldBindJSON(&payload); err != nil {
